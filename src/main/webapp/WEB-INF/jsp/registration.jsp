@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="s" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
 <head>
     <title>Registration</title>
@@ -13,6 +14,11 @@
         <input type="password" name="password" id="password">
         <br>
         <button type="submit">Register</button>
+        <div style="color: red">
+            <c:forEach var="error" items="${requestScope.errors}">
+                <p>${error}</p>
+            </c:forEach>
+        </div>
     </form>
 </body>
 </html>

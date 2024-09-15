@@ -4,10 +4,9 @@ import lombok.*;
 
 @Data
 @Builder
-public class CreateUserDTO {
+public class LoginUserDTO {
 
     private String email;
     private String password;
 
 }
-

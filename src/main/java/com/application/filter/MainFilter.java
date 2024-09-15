@@ -1,13 +1,14 @@
 package com.application.filter;
 
-import com.application.dto.CreateUserDTO;
-import com.application.entity.Role;
+import com.application.dto.SessionUserDTO;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+
+import static com.application.entity.Role.*;
 
 @WebFilter("/*")
 public class MainFilter implements Filter {
@@ -17,7 +18,8 @@ public class MainFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         if (request.getSession().getAttribute("user") == null) {
-            request.getSession().setAttribute("user", CreateUserDTO.builder().role(Role.GUEST).build());
+            SessionUserDTO user = SessionUserDTO.builder().role(GUEST).build();
+            request.getSession().setAttribute("user", user);
             filterChain.doFilter(servletRequest, servletResponse);
         }
 

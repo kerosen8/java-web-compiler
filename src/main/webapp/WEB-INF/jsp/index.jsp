@@ -12,7 +12,7 @@
         <a href="${pageContext.request.contextPath}/registration"><button>Sign up</button></a>
     </c:if>
     <c:if test="${sessionScope.user.getRole() == 'USER'}">
-        <p>You are logged in as ${sessionScope.user.getEmail()}</p>
+        <p>You are logged in!</p>
         <form action="${pageContext.request.contextPath}/logout" method="post">
             <button type="submit">Logout</button>
         </form>

@@ -35,7 +35,7 @@ public class MainServlet extends HttpServlet {
         String currentSessionFolderPath = "resources/" + jSessionId + "/";
         Cookie[] cookies = req.getCookies();
 
-        if (!checkCookieContains(cookies, "compilationNumber")) {
+        if (!checkCookiesContains(cookies, "compilationNumber")) {
             resp.addCookie(new Cookie("compilationNumber", String.valueOf(1)));
         }
 
@@ -110,7 +110,7 @@ public class MainServlet extends HttpServlet {
         return new String(Files.readAllBytes(new File(filePath).toPath()));
     }
 
-    private boolean checkCookieContains(Cookie[] cookies, String cookieName) {
+    private boolean checkCookiesContains(Cookie[] cookies, String cookieName) {
         return Arrays.stream(cookies).anyMatch(cookie -> cookie.getName().equals(cookieName));
     }
 

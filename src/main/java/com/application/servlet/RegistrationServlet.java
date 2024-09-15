@@ -1,9 +1,12 @@
 package com.application.servlet;
 
 import com.application.dto.CreateUserDTO;
+import com.application.dto.SessionUserDTO;
 import com.application.entity.Role;
 import com.application.entity.User;
 import com.application.service.UserService;
+import com.application.validator.CreateUserValidator;
+import com.application.validator.ValidationResult;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,14 +27,20 @@ public class RegistrationServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        CreateUserDTO userToBeAdded = CreateUserDTO
+        CreateUserDTO createUserDTO = CreateUserDTO
                 .builder()
                 .email(req.getParameter("email"))
                 .password(req.getParameter("password"))
-                .role(Role.GUEST)
                 .build();
-        User user = userService.createUser(userToBeAdded);
-        req.getSession().setAttribute("user", user);
-        resp.sendRedirect("/compiler");
+        CreateUserValidator createUserValidator = new CreateUserValidator();
+        ValidationResult result = createUserValidator.validate(createUserDTO);
+        if (result.isValid()) {
+            SessionUserDTO user = userService.create(createUserDTO);
+            req.getSession().setAttribute("user", user);
+            resp.sendRedirect("/compiler");
+        } else {
+            req.setAttribute("errors", result.getErrors());
+            req.getRequestDispatcher("/WEB-INF/jsp/registration.jsp").forward(req, resp);
+        }
     }
 }

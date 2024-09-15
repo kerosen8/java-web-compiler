@@ -1,13 +1,13 @@
 package com.application.dao;
 
 import com.application.dto.CreateUserDTO;
-import com.application.entity.Role;
 import com.application.entity.User;
 import com.application.util.DBConnectorManager;
 
 import java.sql.*;
 import java.util.Optional;
 
+import static com.application.entity.Role.*;
 import static java.sql.Statement.*;
 
 public class UserDAO {
@@ -15,20 +15,16 @@ public class UserDAO {
     private final String CREATE_SQL = "INSERT INTO users (email, password) VALUES (?, ?);";
     private final String FIND_BY_EMAIL_SQL = "SELECT * FROM users WHERE email = ?;";
 
-    public User create(CreateUserDTO userDTO) {
+    public User create(User user) {
         try (Connection connection = DBConnectorManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(CREATE_SQL, RETURN_GENERATED_KEYS)) {
-            preparedStatement.setString(1, userDTO.getEmail());
-            preparedStatement.setString(2, userDTO.getPassword());
+            preparedStatement.setString(1, user.getEmail());
+            preparedStatement.setString(2, user.getPassword());
             preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
-            return User.builder()
-                    .id(resultSet.getInt(1))
-                    .email(userDTO.getEmail())
-                    .password(userDTO.getPassword())
-                    .role(Role.USER)
-                    .build();
+            user.setId(resultSet.getInt(1));
+            return user;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -44,7 +40,6 @@ public class UserDAO {
                         .id(resultSet.getInt("id"))
                         .email(resultSet.getString("email"))
                         .password(resultSet.getString("password"))
-                        .role(Role.USER)
                         .build();
                 return Optional.of(user);
             } else {
