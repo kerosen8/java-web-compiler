@@ -12,7 +12,7 @@ import static java.sql.Statement.*;
 
 public class UserDAO {
 
-    private final String CREATE_SQL = "INSERT INTO users (email, password) VALUES (?, ?);";
+    private final String CREATE_SQL = "INSERT INTO users (email, password, salt) VALUES (?, ?, ?);";
     private final String FIND_BY_EMAIL_SQL = "SELECT * FROM users WHERE email = ?;";
 
     public User create(User user) {
@@ -20,6 +20,7 @@ public class UserDAO {
              PreparedStatement preparedStatement = connection.prepareStatement(CREATE_SQL, RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, user.getEmail());
             preparedStatement.setString(2, user.getPassword());
+            preparedStatement.setString(3, user.getSalt());
             preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
@@ -40,6 +41,7 @@ public class UserDAO {
                         .id(resultSet.getInt("id"))
                         .email(resultSet.getString("email"))
                         .password(resultSet.getString("password"))
+                        .salt(resultSet.getString("salt"))
                         .build();
                 return Optional.of(user);
             } else {

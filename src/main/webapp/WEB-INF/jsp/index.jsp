@@ -16,6 +16,7 @@
         <form action="${pageContext.request.contextPath}/logout" method="post">
             <button type="submit">Logout</button>
         </form>
+        <p>${requestScope.pass}</p>
     </c:if>
     <br>
     <br>

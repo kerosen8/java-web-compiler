@@ -12,12 +12,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 import static com.application.entity.Role.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -38,7 +43,7 @@ public class LoginServlet extends HttpServlet {
                 .build();
         LoginUserValidator loginUserValidator = new LoginUserValidator();
         ValidationResult result = loginUserValidator.validate(loginUserDTO);
-        if (result.isValid()) {
+        if (result.isValid() && authenticate(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
             Optional<User> userFromDb = userService.findByEmail(loginUserDTO.getEmail());
             SessionUserDTO user = SessionUserDTO
                     .builder()
@@ -51,6 +56,30 @@ public class LoginServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
         }
         resp.sendRedirect("/compiler");
+    }
+
+    @SneakyThrows
+    private boolean authenticate(String email, String password) {
+        Optional<User> userFromDb = userService.findByEmail(email);
+        if (userFromDb.isPresent()) {
+            byte[] storedSalt = hexStringToByteArray(userFromDb.get().getSalt());
+            byte[] storedHash = hexStringToByteArray(userFromDb.get().getPassword());
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
+            messageDigest.update(storedSalt);
+            byte[] hashedPassword = messageDigest.digest(password.getBytes(UTF_8));
+            return MessageDigest.isEqual(hashedPassword, storedHash);
+        }
+        return false;
+    }
+
+    private byte[] hexStringToByteArray(String hex) {
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i+1), 16));
+        }
+        return data;
     }
 
 }

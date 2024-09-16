@@ -19,6 +19,7 @@ public class UserService {
                 .builder()
                 .email(createUserDTO.getEmail())
                 .password(createUserDTO.getPassword())
+                .salt(createUserDTO.getSalt())
                 .build();
         User addedUser = userDAO.create(user);
         return SessionUserDTO

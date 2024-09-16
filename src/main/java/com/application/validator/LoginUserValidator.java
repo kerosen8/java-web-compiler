@@ -17,9 +17,9 @@ public class LoginUserValidator implements Validator<LoginUserDTO> {
         if (optionalUser.isEmpty()) {
             validationResult.add("No such user exists!");
         }
-        if (optionalUser.isPresent() && !optionalUser.get().getPassword().equals(loginUserDTO.getPassword())) {
-            validationResult.add("Wrong password!");
-        }
+//        if (optionalUser.isPresent() && !optionalUser.get().getPassword().equals(loginUserDTO.getPassword())) {
+//            validationResult.add("Wrong password!");
+//        }
         if (loginUserDTO.getPassword().length() < 6) {
             validationResult.add("Password must be at least 6 characters!");
         }

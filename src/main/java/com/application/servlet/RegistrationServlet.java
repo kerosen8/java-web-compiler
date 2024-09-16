@@ -12,8 +12,19 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import static java.nio.charset.StandardCharsets.*;
 
 @WebServlet("/registration")
 public class RegistrationServlet extends HttpServlet {
@@ -35,6 +46,9 @@ public class RegistrationServlet extends HttpServlet {
         CreateUserValidator createUserValidator = new CreateUserValidator();
         ValidationResult result = createUserValidator.validate(createUserDTO);
         if (result.isValid()) {
+            List<String> hash = hashPassword(createUserDTO.getPassword());
+            createUserDTO.setPassword(hash.get(0));
+            createUserDTO.setSalt(hash.get(1));
             SessionUserDTO user = userService.create(createUserDTO);
             req.getSession().setAttribute("user", user);
             resp.sendRedirect("/compiler");
@@ -42,5 +56,24 @@ public class RegistrationServlet extends HttpServlet {
             req.setAttribute("errors", result.getErrors());
             req.getRequestDispatcher("/WEB-INF/jsp/registration.jsp").forward(req, resp);
         }
+    }
+
+    @SneakyThrows
+    private List<String> hashPassword(String password) {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] salt = new byte[16];
+        secureRandom.nextBytes(salt);
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
+        messageDigest.update(salt);
+        byte[] hashedPassword = messageDigest.digest(password.getBytes(UTF_8));
+        StringBuilder hashedPasswordBuilder = new StringBuilder();
+        for (byte b : hashedPassword) {
+            hashedPasswordBuilder.append(String.format("%02x", b));
+        }
+        StringBuilder hashedSaltBuilder = new StringBuilder();
+        for (byte b : salt) {
+            hashedSaltBuilder.append(String.format("%02x", b));
+        }
+        return List.of(hashedPasswordBuilder.toString(), hashedSaltBuilder.toString());
     }
 }
