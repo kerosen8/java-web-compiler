@@ -5,6 +5,7 @@ import com.application.dto.SessionUserDTO;
 import com.application.entity.Role;
 import com.application.entity.User;
 import com.application.service.UserService;
+import com.application.util.SecurityUtil;
 import com.application.validator.LoginUserValidator;
 import com.application.validator.ValidationResult;
 import jakarta.servlet.ServletException;
@@ -62,24 +63,12 @@ public class LoginServlet extends HttpServlet {
     private boolean authenticate(String email, String password) {
         Optional<User> userFromDb = userService.findByEmail(email);
         if (userFromDb.isPresent()) {
-            byte[] storedSalt = hexStringToByteArray(userFromDb.get().getSalt());
-            byte[] storedHash = hexStringToByteArray(userFromDb.get().getPassword());
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
-            messageDigest.update(storedSalt);
-            byte[] hashedPassword = messageDigest.digest(password.getBytes(UTF_8));
-            return MessageDigest.isEqual(hashedPassword, storedHash);
+            String storedSalt = userFromDb.get().getSalt();
+            String storedHash = userFromDb.get().getPassword();
+            return SecurityUtil.verifyHash(password, storedHash, storedSalt);
         }
         return false;
     }
 
-    private byte[] hexStringToByteArray(String hex) {
-        int len = hex.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i+1), 16));
-        }
-        return data;
-    }
 
 }
