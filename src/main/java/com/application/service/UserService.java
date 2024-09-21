@@ -3,8 +3,9 @@ package com.application.service;
 import com.application.dao.UserDAO;
 import com.application.dto.CreateUserDTO;
 import com.application.dto.SessionUserDTO;
-import com.application.entity.Role;
 import com.application.entity.User;
+import com.application.util.SecurityUtil;
+import lombok.SneakyThrows;
 
 import java.util.Optional;
 
@@ -31,6 +32,17 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) {
         return userDAO.findByEmail(email);
+    }
+
+    @SneakyThrows
+    public boolean login(String email, String password) {
+        Optional<User> userFromDb = findByEmail(email);
+        if (userFromDb.isPresent()) {
+            String storedSalt = userFromDb.get().getSalt();
+            String storedHash = userFromDb.get().getPassword();
+            return SecurityUtil.verifyHash(password, storedHash, storedSalt);
+        }
+        return false;
     }
 
 }

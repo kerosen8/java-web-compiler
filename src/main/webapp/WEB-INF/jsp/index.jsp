@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <html>
 <head>
@@ -25,15 +26,19 @@
         <br>
         <textarea spellcheck="false" name="code" id="code" rows="30" cols="80">${requestScope.code}</textarea>
         <br>
-        <button type="submit">Compile</button>
+        <button type="submit" name="action" value="compile">Compile</button>
+        <c:if test="${sessionScope.user.getRole() == 'USER'}">
+            <button type="submit" name="action" value="save">Save</button>
+            <button type="submit" name="action" value="download">Download</button>
+        </c:if>
     </form>
     <br>
     <p>Output:</p>
     <div>${requestScope.result}</div>
     <div>
         <p>Last compiles:</p>
-        <c:forEach var="entry" items="${requestScope.lastCompiles}">
-            <a href="${pageContext.request.contextPath}?selectedCompilation=${entry.key}">${entry.value}</a>
+        <c:forEach var="entry" items="${sessionScope.latestCompilations}">
+            <a href="${pageContext.request.contextPath}?selectedCompilation=${entry.key}"><fmt:formatDate value="${entry.value.getCompilationTime()}" pattern="HH:mm:ss"/></a>
             <br>
         </c:forEach>
     </div>

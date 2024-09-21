@@ -3,7 +3,6 @@ package com.application.util;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 

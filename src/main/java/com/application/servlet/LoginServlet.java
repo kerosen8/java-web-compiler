@@ -43,8 +43,8 @@ public class LoginServlet extends HttpServlet {
                 .password(req.getParameter("password"))
                 .build();
         LoginUserValidator loginUserValidator = new LoginUserValidator();
-        ValidationResult result = loginUserValidator.validate(loginUserDTO);
-        if (result.isValid() && authenticate(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
+        ValidationResult vr = loginUserValidator.validate(loginUserDTO);
+        if (vr.isValid() && userService.login(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
             Optional<User> userFromDb = userService.findByEmail(loginUserDTO.getEmail());
             SessionUserDTO user = SessionUserDTO
                     .builder()
@@ -53,22 +53,10 @@ public class LoginServlet extends HttpServlet {
                     .build();
             req.getSession().setAttribute("user", user);
         } else {
-            req.setAttribute("errors", result.getErrors());
+            req.setAttribute("errors", vr.getErrors());
             req.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
         }
         resp.sendRedirect("/compiler");
     }
-
-    @SneakyThrows
-    private boolean authenticate(String email, String password) {
-        Optional<User> userFromDb = userService.findByEmail(email);
-        if (userFromDb.isPresent()) {
-            String storedSalt = userFromDb.get().getSalt();
-            String storedHash = userFromDb.get().getPassword();
-            return SecurityUtil.verifyHash(password, storedHash, storedSalt);
-        }
-        return false;
-    }
-
 
 }
