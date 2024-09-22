@@ -27,11 +27,15 @@ public class CompilerServlet extends HttpServlet {
             """;
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Cookie[] cookies = req.getCookies();
 
         if (!checkCookiesContains(cookies, "compilationNumber")) {
-            resp.addCookie(new Cookie("compilationNumber", String.valueOf(1)));
+            addCookie(resp, cookies, "compilationNumber", "1");
+            req.getSession().setAttribute("latestCompilations", new LinkedHashMap<Integer, CompilationResult>());
+        }
+        if (req.getSession().getAttribute("latestCompilations") == null) {
             req.getSession().setAttribute("latestCompilations", new LinkedHashMap<Integer, CompilationResult>());
         }
 
@@ -50,19 +54,25 @@ public class CompilerServlet extends HttpServlet {
 
     @Override
     @SneakyThrows
+    @SuppressWarnings("unchecked")
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Cookie[] cookies = req.getCookies();
-        int compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
+        int compilationNumber;
+        if (getCookieByName(cookies, "compilationNumber").isPresent()) {
+            compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
+        } else {
+            compilationNumber = 1;
+        }
         String code = req.getParameter("code");
         String action = req.getParameter("action");
         Map<Integer, CompilationResult> latestCompilations = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("latestCompilations");
 
         if ("compile".equals(action)) {
             if (compilationNumber <= 10) {
-                resp.addCookie(new Cookie("compilationNumber", String.valueOf(compilationNumber + 1)));
+                addCookie(resp, cookies, "compilationNumber", "" + (compilationNumber + 1));
             } else {
                 compilationNumber = 1;
-                resp.addCookie(new Cookie("compilationNumber", String.valueOf(compilationNumber)));
+                addCookie(resp, cookies, "compilationNumber", "" + compilationNumber);
             }
             CompilationResult compilationResult = Compiler.compile(code);
             latestCompilations.put(compilationNumber, compilationResult);
@@ -101,6 +111,18 @@ public class CompilerServlet extends HttpServlet {
 
     private Optional<Cookie> getCookieByName(Cookie[] cookies, String cookieName) {
         return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(cookieName)).findAny();
+    }
+
+    private void addCookie(HttpServletResponse response, Cookie[] cookies, String name, String value) {
+        if (getCookieByName(cookies, name).isPresent()) {
+            Cookie cookie = getCookieByName(cookies, name).get();
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+        }
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(3600);
+        response.addCookie(cookie);
     }
 
 }
