@@ -1,9 +1,8 @@
 package com.application.entity;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
-@Setter
-@Getter
 @Data
 @Builder
 public class User {

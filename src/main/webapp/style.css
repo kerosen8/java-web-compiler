@@ -1,3 +1,20 @@
 textarea {
     resize: none;
 }
+
+.favorite-container {
+    position: absolute;
+    top: 50px;
+    left: 900px;
+}
+
+.last-compilations-container {
+    position: absolute;
+    top: 50px;
+    left: 650px;
+}
+
+#modal {
+    display: none;
+    position: fi;
+}

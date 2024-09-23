@@ -36,7 +36,7 @@ public class Compiler {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    result.append(line);
+                    result.append(line).append(System.lineSeparator());
                 }
             }
             LocalDateTime currentTime = LocalDateTime.now();
@@ -49,5 +49,6 @@ public class Compiler {
         }
         return CompilationResult.of(code, result.toString(), compilationTime);
     }
+
 }
 

@@ -76,14 +76,14 @@ public class CompilerServlet extends HttpServlet {
             }
             CompilationResult compilationResult = Compiler.compile(code);
             latestCompilations.put(compilationNumber, compilationResult);
-            req.setAttribute("result", compilationResult.getResult());
+            req.setAttribute("result", compilationResult.getResult().replaceAll(System.lineSeparator(), "<br>"));
             req.setAttribute("code", code);
             req.getSession().setAttribute("latestCompilations", sortedLatestCompilations(latestCompilations));
             req.getRequestDispatcher("/WEB-INF/jsp/index.jsp").forward(req, resp);
         }
         if ("download".equals(action)) {
             resp.setContentType("application/octet-stream");
-            resp.setHeader("Content-Disposition", "attachment; filename=Main.java");
+            resp.setHeader("Content-Disposition", "attachment; filename=" + getFileName(code) + ".java");
             OutputStream out = resp.getOutputStream();
             out.write(code.getBytes());
             out.flush();
@@ -91,7 +91,7 @@ public class CompilerServlet extends HttpServlet {
             resp.sendRedirect("/compiler");
         }
         if ("save".equals(action)) {
-
+            System.out.println(req.getParameter("fileName"));
         }
     }
 
@@ -123,6 +123,19 @@ public class CompilerServlet extends HttpServlet {
         cookie.setPath("/");
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
+    }
+
+    private String getFileName(String code) {
+        String target = "public class";
+        int startIndex = code.indexOf(target) + target.length() + 1;
+        StringBuilder result = new StringBuilder();
+        for (int i = startIndex; ; i++) {
+            char c = code.charAt(i);
+            if (c != ' ') {
+                result.append(code.charAt(i));
+            } else break;
+        }
+        return result.toString();
     }
 
 }
