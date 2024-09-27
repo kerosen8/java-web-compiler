@@ -1,5 +1,9 @@
 package com.application.servlet;
 
+import com.application.dto.CreateCodeDTO;
+import com.application.dto.CodeDTO;
+import com.application.dto.SessionUserDTO;
+import com.application.service.CodeService;
 import com.application.util.CompilationResult;
 import com.application.util.Compiler;
 import jakarta.servlet.ServletException;
@@ -12,12 +16,16 @@ import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @WebServlet("/compiler")
 public class CompilerServlet extends HttpServlet {
 
+    private final CodeService codeService = new CodeService();
     private final String startCode = """
             public class Main {
                 public static void main(String[] args) {
@@ -29,26 +37,23 @@ public class CompilerServlet extends HttpServlet {
     @Override
     @SuppressWarnings("unchecked")
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Cookie[] cookies = req.getCookies();
-
-        if (!checkCookiesContains(cookies, "compilationNumber")) {
-            addCookie(resp, cookies, "compilationNumber", "1");
-            req.getSession().setAttribute("latestCompilations", new LinkedHashMap<Integer, CompilationResult>());
+        SessionUserDTO user = (SessionUserDTO) req.getSession().getAttribute("user");
+        req.setAttribute("code", startCode);
+        if (req.getParameter("recentCodeNumber") != null) {
+            int recentCodeNumber = Integer.parseInt(req.getParameter("recentCodeNumber"));
+            Map<Integer, CompilationResult> recentCodes = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("recentCodes");
+            if (recentCodePresent(recentCodes, recentCodeNumber)) {
+                req.setAttribute("code", recentCodes.get(recentCodeNumber).getCode());
+                req.setAttribute("result", recentCodes.get(recentCodeNumber).getResult());
+                req.setAttribute("recentCodes", sortedRecentCodes(recentCodes));
+            }
         }
-        if (req.getSession().getAttribute("latestCompilations") == null) {
-            req.getSession().setAttribute("latestCompilations", new LinkedHashMap<Integer, CompilationResult>());
+        if (req.getParameter("title") != null && user.getRole().name().equals("USER")) {
+            String title = req.getParameter("title");
+            List<CodeDTO> savedCodes = (List<CodeDTO>) req.getSession().getAttribute("savedCodes");
+            Optional<CodeDTO> requiredCode = savedCodes.stream().filter(i -> i.getTitle().equals(title)).findAny();
+            requiredCode.ifPresent(codeDTO -> req.setAttribute("code", codeDTO.getCode()));
         }
-
-        if (req.getParameter("selectedCompilation") != null) {
-            int selectedCompilation = Integer.parseInt(req.getParameter("selectedCompilation"));
-            Map<Integer, CompilationResult> results = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("latestCompilations");
-            req.setAttribute("result", results.get(selectedCompilation).getResult());
-            req.setAttribute("code", results.get(selectedCompilation).getCode());
-            req.setAttribute("latestCompilations", sortedLatestCompilations(results));
-        } else {
-            req.setAttribute("code", startCode);
-        }
-
         req.getRequestDispatcher("/WEB-INF/jsp/index.jsp").forward(req, resp);
     }
 
@@ -56,18 +61,13 @@ public class CompilerServlet extends HttpServlet {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Cookie[] cookies = req.getCookies();
-        int compilationNumber;
-        if (getCookieByName(cookies, "compilationNumber").isPresent()) {
-            compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
-        } else {
-            compilationNumber = 1;
-        }
         String code = req.getParameter("code");
         String action = req.getParameter("action");
-        Map<Integer, CompilationResult> latestCompilations = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("latestCompilations");
 
         if ("compile".equals(action)) {
+            Cookie[] cookies = req.getCookies();
+            Map<Integer, CompilationResult> recentCodes = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("recentCodes");
+            int compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
             if (compilationNumber <= 10) {
                 addCookie(resp, cookies, "compilationNumber", "" + (compilationNumber + 1));
             } else {
@@ -75,10 +75,10 @@ public class CompilerServlet extends HttpServlet {
                 addCookie(resp, cookies, "compilationNumber", "" + compilationNumber);
             }
             CompilationResult compilationResult = Compiler.compile(code);
-            latestCompilations.put(compilationNumber, compilationResult);
+            recentCodes.put(compilationNumber, compilationResult);
             req.setAttribute("result", compilationResult.getResult().replaceAll(System.lineSeparator(), "<br>"));
             req.setAttribute("code", code);
-            req.getSession().setAttribute("latestCompilations", sortedLatestCompilations(latestCompilations));
+            req.getSession().setAttribute("recentCodes", sortedRecentCodes(recentCodes));
             req.getRequestDispatcher("/WEB-INF/jsp/index.jsp").forward(req, resp);
         }
         if ("download".equals(action)) {
@@ -91,11 +91,23 @@ public class CompilerServlet extends HttpServlet {
             resp.sendRedirect("/compiler");
         }
         if ("save".equals(action)) {
-            System.out.println(req.getParameter("fileName"));
+            SessionUserDTO user = (SessionUserDTO) req.getSession().getAttribute("user");
+            String pathName = generateFilePath();
+            Files.write(Path.of("favorite/" + pathName + ".java"), code.getBytes());
+            CreateCodeDTO createCodeDTO = CreateCodeDTO
+                    .builder()
+                    .userId(user.getUserId())
+                    .path("favorite/" + pathName + ".java")
+                    .title(req.getParameter("title"))
+                    .build();
+            codeService.create(createCodeDTO);
+            req.setAttribute("code", code);
+            req.getSession().setAttribute("savedCodes", codeService.findByUserId(user.getUserId()));
+            req.getRequestDispatcher("/WEB-INF/jsp/index.jsp").forward(req, resp);
         }
     }
 
-    private Map<Integer, CompilationResult> sortedLatestCompilations(Map<Integer, CompilationResult> resultMap) throws IOException {
+    private Map<Integer, CompilationResult> sortedRecentCodes(Map<Integer, CompilationResult> resultMap) throws IOException {
         return resultMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.comparing(CompilationResult::getCompilationTime).reversed()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -103,10 +115,6 @@ public class CompilerServlet extends HttpServlet {
                         (e1, e2) -> e2,
                         LinkedHashMap::new
                 ));
-    }
-
-    private boolean checkCookiesContains(Cookie[] cookies, String cookieName) {
-        return Arrays.stream(cookies).anyMatch(cookie -> cookie.getName().equals(cookieName));
     }
 
     private Optional<Cookie> getCookieByName(Cookie[] cookies, String cookieName) {
@@ -136,6 +144,22 @@ public class CompilerServlet extends HttpServlet {
             } else break;
         }
         return result.toString();
+    }
+
+    private String generateFilePath() {
+        SecureRandom random = new SecureRandom();
+        byte[] randomBytes = new byte[32];
+        random.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    private boolean recentCodePresent(Map<Integer, CompilationResult> results, int compilationNumber) {
+        for (Integer entry : results.keySet()) {
+            if (entry == compilationNumber) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

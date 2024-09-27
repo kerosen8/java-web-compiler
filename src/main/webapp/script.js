@@ -19,7 +19,7 @@ function closeModal() {
 }
 
 function submitForm() {
-    const fileName = document.getElementById('fileName').value;
+    const fileName = document.getElementById('title').value;
     if (fileName) {
         const form = document.getElementById('codeForm');
         const actionInput = document.createElement('input');
@@ -29,7 +29,7 @@ function submitForm() {
 
         const fileNameInput = document.createElement('input');
         fileNameInput.type = 'hidden';
-        fileNameInput.name = 'fileName';
+        fileNameInput.name = 'title';
         fileNameInput.value = fileName;
 
         form.appendChild(actionInput);

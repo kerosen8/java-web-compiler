@@ -21,7 +21,7 @@ public class DBConnectorManager {
 
     static {
         try {
-            Class.forName("org.postgresql.Driver");
+            Class.forName(PropertiesUtil.getProperty("database.driver"));
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

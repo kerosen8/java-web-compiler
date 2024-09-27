@@ -5,10 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CreateFavoriteDTO {
+public class CodeDTO {
 
-    private Integer userId;
-    private String path;
+    private String code;
     private String title;
 
 }

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class Favorite {
+public class Code {
 
     private Integer id;
     private Integer userId;

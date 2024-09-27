@@ -35,11 +35,11 @@ public class UserService {
     }
 
     @SneakyThrows
-    public boolean login(String email, String password) {
-        Optional<User> userFromDb = findByEmail(email);
-        if (userFromDb.isPresent()) {
-            String storedSalt = userFromDb.get().getSalt();
-            String storedHash = userFromDb.get().getPassword();
+    public boolean authentication(String email, String password) {
+        Optional<User> optionalUser = findByEmail(email);
+        if (optionalUser.isPresent()) {
+            String storedSalt = optionalUser.get().getSalt();
+            String storedHash = optionalUser.get().getPassword();
             return SecurityUtil.verifyHash(password, storedHash, storedSalt);
         }
         return false;
