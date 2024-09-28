@@ -20,7 +20,7 @@
         </form>
     </c:if>
     <form method="post" action="${pageContext.request.contextPath}/compiler" id="codeForm">
-        <label for="code">Input:</label>
+        <label for="code">Code:</label>
         <br>
         <textarea spellcheck="false" name="code" id="code" rows="30" cols="80">${requestScope.code}</textarea>
         <br>
@@ -29,10 +29,14 @@
             <button type="button" name="action" value="save" onclick="showSaveModal()">Save</button>
             <button type="submit" name="action" value="download">Download</button>
         </c:if>
+        <br>
+        <label for="input">Input:</label>
+        <br>
+        <textarea spellcheck="false" name="input" id="input" rows="5" cols="80">${requestScope.input}</textarea>
     </form>
     <div id="saveModal" style="display:none;">
         <div>
-            <label for="title">Enter file name:</label>
+            <label for="title">Enter code name:</label>
             <input type="text" id="title" name="title" />
             <button onclick="submitForm()">Submit</button>
             <button onclick="closeModal()">Cancel</button>

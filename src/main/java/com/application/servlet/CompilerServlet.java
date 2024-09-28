@@ -66,6 +66,7 @@ public class CompilerServlet extends HttpServlet {
 
         if ("compile".equals(action)) {
             Cookie[] cookies = req.getCookies();
+            String input = req.getParameter("input");
             Map<Integer, CompilationResult> recentCodes = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("recentCodes");
             int compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
             if (compilationNumber <= 10) {
@@ -74,7 +75,7 @@ public class CompilerServlet extends HttpServlet {
                 compilationNumber = 1;
                 addCookie(resp, cookies, "compilationNumber", "" + compilationNumber);
             }
-            CompilationResult compilationResult = Compiler.compile(code);
+            CompilationResult compilationResult = Compiler.compile(code, input);
             recentCodes.put(compilationNumber, compilationResult);
             req.setAttribute("result", compilationResult.getResult().replaceAll(System.lineSeparator(), "<br>"));
             req.setAttribute("code", code);
