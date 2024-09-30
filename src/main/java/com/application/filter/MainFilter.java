@@ -2,7 +2,11 @@ package com.application.filter;
 
 import com.application.dto.SessionUserDTO;
 import com.application.service.CodeService;
-import com.application.util.CompilationResult;
+import com.application.util.ServletUtil;
+import com.application.util.annotation.CustomFilter;
+import com.application.util.annotation.Inject;
+import com.application.util.compiler.CompilationResult;
+import com.application.util.dicontainer.factory.BeanFactory;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.Cookie;
@@ -16,10 +20,12 @@ import java.util.Optional;
 
 import static com.application.entity.Role.*;
 
-@WebFilter("/*")
+//@WebFilter("/*")
+@CustomFilter("/*")
 public class MainFilter implements Filter {
 
-    private final CodeService codeService = new CodeService();
+    @Inject
+    private CodeService codeService;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -32,8 +38,8 @@ public class MainFilter implements Filter {
             SessionUserDTO user = SessionUserDTO.builder().role(GUEST).build();
             req.getSession().setAttribute("user", user);
         }
-        if (!checkCookiesContains(cookies, "compilationNumber")) {
-            addCookie(resp, cookies, "compilationNumber", "1");
+        if (!ServletUtil.checkCookiesContains(cookies, "compilationNumber")) {
+            ServletUtil.addCookie(resp, cookies, "compilationNumber", "1");
         }
         if (req.getSession().getAttribute("recentCodes") == null) {
             req.getSession().setAttribute("recentCodes", new LinkedHashMap<Integer, CompilationResult>());
@@ -44,25 +50,5 @@ public class MainFilter implements Filter {
         }
         filterChain.doFilter(req, resp);
 
-    }
-
-    private Optional<Cookie> getCookieByName(Cookie[] cookies, String cookieName) {
-        return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(cookieName)).findAny();
-    }
-
-    private void addCookie(HttpServletResponse response, Cookie[] cookies, String name, String value) {
-        if (getCookieByName(cookies, name).isPresent()) {
-            Cookie cookie = getCookieByName(cookies, name).get();
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
-        }
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge(3600);
-        response.addCookie(cookie);
-    }
-
-    private boolean checkCookiesContains(Cookie[] cookies, String cookieName) {
-        return Arrays.stream(cookies).anyMatch(cookie -> cookie.getName().equals(cookieName));
     }
 }

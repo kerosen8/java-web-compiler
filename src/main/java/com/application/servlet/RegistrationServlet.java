@@ -3,21 +3,25 @@ package com.application.servlet;
 import com.application.dto.CreateUserDTO;
 import com.application.dto.SessionUserDTO;
 import com.application.service.UserService;
-import com.application.util.SecurityUtil;
+import com.application.util.annotation.CustomServlet;
+import com.application.util.annotation.Inject;
+import com.application.util.secutiry.SecurityUtil;
 import com.application.validator.CreateUserValidator;
 import com.application.validator.ValidationResult;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet("/registration")
+@CustomServlet("/registration")
 public class RegistrationServlet extends HttpServlet {
 
-    private final UserService userService = new UserService();
+    @Inject
+    private UserService userService;
+    @Inject
+    private CreateUserValidator createUserValidator;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -31,7 +35,6 @@ public class RegistrationServlet extends HttpServlet {
                 .email(req.getParameter("email"))
                 .password(req.getParameter("password"))
                 .build();
-        CreateUserValidator createUserValidator = new CreateUserValidator();
         ValidationResult vr = createUserValidator.validate(createUserDTO);
         if (vr.isValid()) {
             String salt = SecurityUtil.generateSalt();

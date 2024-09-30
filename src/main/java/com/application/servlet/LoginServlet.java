@@ -4,10 +4,11 @@ import com.application.dto.LoginUserDTO;
 import com.application.dto.SessionUserDTO;
 import com.application.entity.User;
 import com.application.service.UserService;
+import com.application.util.annotation.CustomServlet;
+import com.application.util.annotation.Inject;
 import com.application.validator.LoginUserValidator;
 import com.application.validator.ValidationResult;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,10 +18,13 @@ import java.util.Optional;
 
 import static com.application.entity.Role.*;
 
-@WebServlet("/login")
+@CustomServlet("/login")
 public class LoginServlet extends HttpServlet {
 
-    private final UserService userService = new UserService();
+    @Inject
+    private UserService userService;
+    @Inject
+    private LoginUserValidator loginUserValidator;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,7 +38,6 @@ public class LoginServlet extends HttpServlet {
                 .email(req.getParameter("email"))
                 .password(req.getParameter("password"))
                 .build();
-        LoginUserValidator loginUserValidator = new LoginUserValidator();
         ValidationResult vr = loginUserValidator.validate(loginUserDTO);
         if (vr.isValid() && userService.authentication(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
             Optional<User> optionalUser = userService.findByEmail(loginUserDTO.getEmail());

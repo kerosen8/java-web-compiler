@@ -4,7 +4,8 @@ import com.application.dao.UserDAO;
 import com.application.dto.CreateUserDTO;
 import com.application.dto.SessionUserDTO;
 import com.application.entity.User;
-import com.application.util.SecurityUtil;
+import com.application.util.annotation.Inject;
+import com.application.util.secutiry.SecurityUtil;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
@@ -13,7 +14,8 @@ import static com.application.entity.Role.*;
 
 public class UserService {
 
-    private final UserDAO userDAO = new UserDAO();
+    @Inject
+    private UserDAO userDAO;
 
     public SessionUserDTO create(CreateUserDTO createUserDTO) {
         User user = User

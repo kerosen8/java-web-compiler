@@ -4,6 +4,7 @@ import com.application.dao.CodeDAO;
 import com.application.dto.CreateCodeDTO;
 import com.application.dto.CodeDTO;
 import com.application.entity.Code;
+import com.application.util.annotation.Inject;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,10 +14,11 @@ import java.util.stream.Collectors;
 
 public class CodeService {
 
-    private final CodeDAO favoriteDAO = new CodeDAO();
+    @Inject
+    private CodeDAO codeDAO;
 
     public Code create(CreateCodeDTO createFavoriteDTO) {
-        return favoriteDAO.create(Code
+        return codeDAO.create(Code
                 .builder()
                 .userId(createFavoriteDTO.getUserId())
                 .path(createFavoriteDTO.getPath())
@@ -25,7 +27,7 @@ public class CodeService {
     }
 
     public List<CodeDTO> findByUserId(Integer userId) throws IOException {
-        return favoriteDAO.findByUserId(userId).stream().map(i -> CodeDTO
+        return codeDAO.findByUserId(userId).stream().map(i -> CodeDTO
                 .builder()
                 .code(getFileContents(i.getPath()))
                 .title(i.getTitle())

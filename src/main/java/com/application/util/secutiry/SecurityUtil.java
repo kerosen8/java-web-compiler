@@ -1,10 +1,11 @@
-package com.application.util;
+package com.application.util.secutiry;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -51,6 +52,13 @@ public class SecurityUtil {
         byte[] passwordHashBytes = md.digest(password.getBytes(UTF_8));
         byte[] hashBytes = hexStringToByteArray(hash);
         return MessageDigest.isEqual(passwordHashBytes, hashBytes);
+    }
+
+    public static String generateFilePath() {
+        SecureRandom random = new SecureRandom();
+        byte[] randomBytes = new byte[32];
+        random.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
 }

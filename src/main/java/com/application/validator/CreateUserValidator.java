@@ -2,10 +2,12 @@ package com.application.validator;
 
 import com.application.dto.CreateUserDTO;
 import com.application.service.UserService;
+import com.application.util.annotation.Inject;
 
 public class CreateUserValidator implements Validator<CreateUserDTO> {
 
-    private final UserService userService = new UserService();
+    @Inject
+    private UserService userService;
 
     @Override
     public ValidationResult validate(CreateUserDTO createUserDTO) {

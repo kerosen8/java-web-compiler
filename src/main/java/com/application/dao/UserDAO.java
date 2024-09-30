@@ -1,13 +1,11 @@
 package com.application.dao;
 
-import com.application.dto.CreateUserDTO;
 import com.application.entity.User;
-import com.application.util.DBConnectorManager;
+import com.application.util.database.DBConnectorManager;
 
 import java.sql.*;
 import java.util.Optional;
 
-import static com.application.entity.Role.*;
 import static java.sql.Statement.*;
 
 public class UserDAO {

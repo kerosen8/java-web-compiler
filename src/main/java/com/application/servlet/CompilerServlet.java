@@ -4,10 +4,13 @@ import com.application.dto.CreateCodeDTO;
 import com.application.dto.CodeDTO;
 import com.application.dto.SessionUserDTO;
 import com.application.service.CodeService;
-import com.application.util.CompilationResult;
-import com.application.util.Compiler;
+import com.application.util.ServletUtil;
+import com.application.util.annotation.Inject;
+import com.application.util.annotation.CustomServlet;
+import com.application.util.compiler.CompilationResult;
+import com.application.util.compiler.Compiler;
+import com.application.util.secutiry.SecurityUtil;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,14 +21,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@WebServlet("/compiler")
+@CustomServlet("/compiler")
 public class CompilerServlet extends HttpServlet {
 
-    private final CodeService codeService = new CodeService();
+    @Inject
+    private CodeService codeService;
     private final String startCode = """
             public class Main {
                 public static void main(String[] args) {
@@ -68,12 +71,12 @@ public class CompilerServlet extends HttpServlet {
             Cookie[] cookies = req.getCookies();
             String input = req.getParameter("input");
             Map<Integer, CompilationResult> recentCodes = (LinkedHashMap<Integer, CompilationResult>) req.getSession().getAttribute("recentCodes");
-            int compilationNumber = Integer.parseInt(getCookieByName(cookies, "compilationNumber").get().getValue());
+            int compilationNumber = Integer.parseInt(ServletUtil.getCookieByName(cookies, "compilationNumber").get().getValue());
             if (compilationNumber <= 10) {
-                addCookie(resp, cookies, "compilationNumber", "" + (compilationNumber + 1));
+                ServletUtil.addCookie(resp, cookies, "compilationNumber", "" + (compilationNumber + 1));
             } else {
                 compilationNumber = 1;
-                addCookie(resp, cookies, "compilationNumber", "" + compilationNumber);
+                ServletUtil.addCookie(resp, cookies, "compilationNumber", "" + compilationNumber);
             }
             CompilationResult compilationResult = Compiler.compile(code, input);
             recentCodes.put(compilationNumber, compilationResult);
@@ -84,7 +87,7 @@ public class CompilerServlet extends HttpServlet {
         }
         if ("download".equals(action)) {
             resp.setContentType("application/octet-stream");
-            resp.setHeader("Content-Disposition", "attachment; filename=" + getFileName(code) + ".java");
+            resp.setHeader("Content-Disposition", "attachment; filename=" + getClassName(code) + ".java");
             OutputStream out = resp.getOutputStream();
             out.write(code.getBytes());
             out.flush();
@@ -93,7 +96,7 @@ public class CompilerServlet extends HttpServlet {
         }
         if ("save".equals(action)) {
             SessionUserDTO user = (SessionUserDTO) req.getSession().getAttribute("user");
-            String pathName = generateFilePath();
+            String pathName = SecurityUtil.generateFilePath();
             Files.write(Path.of("favorite/" + pathName + ".java"), code.getBytes());
             CreateCodeDTO createCodeDTO = CreateCodeDTO
                     .builder()
@@ -118,23 +121,7 @@ public class CompilerServlet extends HttpServlet {
                 ));
     }
 
-    private Optional<Cookie> getCookieByName(Cookie[] cookies, String cookieName) {
-        return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(cookieName)).findAny();
-    }
-
-    private void addCookie(HttpServletResponse response, Cookie[] cookies, String name, String value) {
-        if (getCookieByName(cookies, name).isPresent()) {
-            Cookie cookie = getCookieByName(cookies, name).get();
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
-        }
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge(3600);
-        response.addCookie(cookie);
-    }
-
-    private String getFileName(String code) {
+    private String getClassName(String code) {
         String target = "public class";
         int startIndex = code.indexOf(target) + target.length() + 1;
         StringBuilder result = new StringBuilder();
@@ -145,13 +132,6 @@ public class CompilerServlet extends HttpServlet {
             } else break;
         }
         return result.toString();
-    }
-
-    private String generateFilePath() {
-        SecureRandom random = new SecureRandom();
-        byte[] randomBytes = new byte[32];
-        random.nextBytes(randomBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
     private boolean recentCodePresent(Map<Integer, CompilationResult> results, int compilationNumber) {

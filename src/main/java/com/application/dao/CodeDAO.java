@@ -1,7 +1,7 @@
 package com.application.dao;
 
 import com.application.entity.Code;
-import com.application.util.DBConnectorManager;
+import com.application.util.database.DBConnectorManager;
 
 import java.sql.*;
 import java.util.ArrayList;

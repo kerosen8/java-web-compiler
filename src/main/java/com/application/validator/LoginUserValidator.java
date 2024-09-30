@@ -3,12 +3,14 @@ package com.application.validator;
 import com.application.dto.LoginUserDTO;
 import com.application.entity.User;
 import com.application.service.UserService;
+import com.application.util.annotation.Inject;
 
 import java.util.Optional;
 
 public class LoginUserValidator implements Validator<LoginUserDTO> {
 
-    private final UserService userService = new UserService();
+    @Inject
+    private UserService userService;
 
     @Override
     public ValidationResult validate(LoginUserDTO loginUserDTO) {
