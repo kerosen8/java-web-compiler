@@ -26,21 +26,30 @@ public class CodeService {
                 .build());
     }
 
-    public List<CodeDTO> findByUserId(Integer userId) throws IOException {
-        return codeDAO.findByUserId(userId).stream().map(i -> CodeDTO
+    public List<CodeDTO> findCodesByUserId(Integer userId) throws IOException {
+        return codeDAO.findCodesByUserId(userId).stream().map(i -> CodeDTO
                 .builder()
-                .code(getFileContents(i.getPath()))
+                .id(i.getId())
+                .code(getFileContent(i.getPath()))
                 .title(i.getTitle())
                 .build()).collect(Collectors.toList());
     }
 
+    public void deleteCodeById(Integer userId, Integer codeId) throws IOException {
+        if (verifyUserHasCode(userId, codeId)) codeDAO.deleteCodeById(codeId);
+    }
 
-    private String getFileContents(String path) {
+
+    private String getFileContent(String path) {
         try {
             return new String(Files.readAllBytes(Path.of(path)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean verifyUserHasCode(Integer userId, Integer codeId) {
+        return codeDAO.findCodesByUserId(userId).stream().anyMatch(i -> i.getId().equals(codeId));
     }
 
 }

@@ -1,4 +1,4 @@
-package com.application.util;
+package com.application.util.database;
 
 import java.io.IOException;
 import java.io.InputStream;

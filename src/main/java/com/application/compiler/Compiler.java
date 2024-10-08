@@ -1,4 +1,4 @@
-package com.application.util.compiler;
+package com.application.compiler;
 
 import lombok.experimental.UtilityClass;
 

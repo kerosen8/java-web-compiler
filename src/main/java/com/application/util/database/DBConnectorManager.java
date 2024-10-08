@@ -1,8 +1,6 @@
 package com.application.util.database;
 
 
-import com.application.util.PropertiesUtil;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

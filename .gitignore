@@ -16,6 +16,9 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+gradle.properties
+settings.gradle
+src/main/resources/application.properties
 
 ### Eclipse ###
 .apt_generated

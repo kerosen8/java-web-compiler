@@ -54,7 +54,7 @@ public class SecurityUtil {
         return MessageDigest.isEqual(passwordHashBytes, hashBytes);
     }
 
-    public static String generateFilePath() {
+    public static String generateFileName() {
         SecureRandom random = new SecureRandom();
         byte[] randomBytes = new byte[32];
         random.nextBytes(randomBytes);

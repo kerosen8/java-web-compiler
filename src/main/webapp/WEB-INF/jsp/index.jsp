@@ -36,8 +36,8 @@
     </form>
     <div id="saveModal" style="display:none;">
         <div>
-            <label for="title">Enter code name:</label>
-            <input type="text" id="title" name="title" />
+            <label for="savedCodeTitle">Enter code name:</label>
+            <input type="text" id="savedCodeTitle" name="savedCodeTitle"/>
             <button onclick="submitForm()">Submit</button>
             <button onclick="closeModal()">Cancel</button>
         </div>
@@ -45,8 +45,9 @@
     <c:if test="${sessionScope.user.getRole() == 'USER'}">
         <div class="favorite-container">
             <p>My codes:</p>
-            <c:forEach var="compilation" items="${sessionScope.savedCodes}">
-                <a href="${pageContext.request.contextPath}/compiler?title=${compilation.getTitle()}">${compilation.getTitle()}</a>
+            <c:forEach var="code" items="${sessionScope.savedCodes}">
+                <a href="${pageContext.request.contextPath}/compiler?savedCodeTitle=${code.getTitle()}">${code.getTitle()}</a>
+                <a href="${pageContext.request.contextPath}/compiler?deleteSavedCode=${code.getId()}">Delete</a>
                 <br>
             </c:forEach>
         </div>

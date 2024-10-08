@@ -1,6 +1,6 @@
 package com.application.util.dicontainer.config;
 
-import com.application.util.PropertiesUtil;
+import com.application.util.database.PropertiesUtil;
 
 import java.util.Map;
 

@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class CodeDTO {
 
+    private Integer id;
     private String code;
     private String title;
 

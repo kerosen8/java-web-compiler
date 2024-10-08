@@ -1,4 +1,4 @@
-package com.application.util.compiler;
+package com.application.compiler;
 
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
