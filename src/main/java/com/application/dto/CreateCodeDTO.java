@@ -8,6 +8,7 @@ import lombok.Data;
 public class CreateCodeDTO {
 
     private Integer userId;
+    private String code;
     private String path;
     private String title;
 

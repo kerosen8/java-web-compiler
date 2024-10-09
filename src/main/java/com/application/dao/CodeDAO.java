@@ -15,21 +15,16 @@ public class CodeDAO {
     private final String FIND_BY_USER_ID_SQL = "SELECT * FROM code WHERE user_id = ?";
     private final String DELETE_BY_CODE_ID = "DELETE FROM code WHERE id = ?";
 
-    public Code create(Code code) {
+    public void create(Code code) {
         try (Connection connection = DBConnectorManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(CREATE_SQL, RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, code.getUserId());
             preparedStatement.setString(2, code.getPath());
             preparedStatement.setString(3, code.getTitle());
             preparedStatement.executeUpdate();
-            ResultSet rs = preparedStatement.getGeneratedKeys();
-            rs.next();
-            code.setId(rs.getInt(1));
-            return code;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     public List<Code> findCodesByUserId(int userId) {

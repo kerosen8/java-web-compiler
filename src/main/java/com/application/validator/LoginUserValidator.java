@@ -14,7 +14,7 @@ public class LoginUserValidator implements Validator<LoginUserDTO> {
 
     @Override
     public ValidationResult validate(LoginUserDTO loginUserDTO) {
-        Optional<User> optionalUser = userService.findByEmail(loginUserDTO.getEmail());
+        Optional<User> optionalUser = userService.findUserByEmail(loginUserDTO.getEmail());
         ValidationResult validationResult = new ValidationResult();
         if (optionalUser.isEmpty()) {
             validationResult.add("No such user exists!");

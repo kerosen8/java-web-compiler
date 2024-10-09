@@ -12,7 +12,7 @@ public class CreateUserValidator implements Validator<CreateUserDTO> {
     @Override
     public ValidationResult validate(CreateUserDTO createUserDTO) {
         ValidationResult validationResult = new ValidationResult();
-        if (userService.findByEmail(createUserDTO.getEmail()).isPresent()) {
+        if (userService.findUserByEmail(createUserDTO.getEmail()).isPresent()) {
             validationResult.add("This email is already taken!");
         }
         if (createUserDTO.getPassword().length() < 6) {

@@ -20,7 +20,7 @@ public class ServletService {
                 ));
     }
 
-    public String getClassName(String code) {
+    public String parseClassName(String code) {
         String target = "public class";
         int startIndex = code.indexOf(target) + target.length() + 1;
         StringBuilder result = new StringBuilder();
@@ -59,7 +59,8 @@ public class ServletService {
     }
 
     public boolean checkCookiesContains(Cookie[] cookies, String cookieName) {
-        return Arrays.stream(cookies).anyMatch(cookie -> cookie.getName().equals(cookieName));
+        if (cookies != null) return Arrays.stream(cookies).anyMatch(cookie -> cookie.getName().equals(cookieName));
+        return false;
     }
 
 }

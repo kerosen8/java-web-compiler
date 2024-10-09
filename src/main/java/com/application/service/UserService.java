@@ -32,13 +32,13 @@ public class UserService {
                 .build();
     }
 
-    public Optional<User> findByEmail(String email) {
+    public Optional<User> findUserByEmail(String email) {
         return userDAO.findByEmail(email);
     }
 
     @SneakyThrows
-    public boolean authentication(String email, String password) {
-        Optional<User> optionalUser = findByEmail(email);
+    public boolean authenticate(String email, String password) {
+        Optional<User> optionalUser = findUserByEmail(email);
         if (optionalUser.isPresent()) {
             String storedSalt = optionalUser.get().getSalt();
             String storedHash = optionalUser.get().getPassword();

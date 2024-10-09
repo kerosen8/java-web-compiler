@@ -20,10 +20,7 @@ public class BeanFactory {
 
     public BeanFactory(ApplicationContext applicationContext) {
         this.configuration = new JavaConfiguration();
-        this.beanConfigurator = new JavaBeanConfigurator(
-                configuration.getPackageToScan(),
-                configuration.getInterfaceToImplementations()
-        );
+        this.beanConfigurator = new JavaBeanConfigurator(configuration.getPackageToScan());
         this.applicationContext = applicationContext;
     }
 

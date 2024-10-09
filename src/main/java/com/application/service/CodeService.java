@@ -17,18 +17,17 @@ public class CodeService {
     @Inject
     private CodeDAO codeDAO;
 
-    public Code create(CreateCodeDTO createFavoriteDTO) {
-        return codeDAO.create(Code
-                .builder()
-                .userId(createFavoriteDTO.getUserId())
+    public void create(CreateCodeDTO createFavoriteDTO) throws IOException {
+         codeDAO.create(Code.builder()
+                 .userId(createFavoriteDTO.getUserId())
                 .path(createFavoriteDTO.getPath())
                 .title(createFavoriteDTO.getTitle())
                 .build());
+         createCodeFile(createFavoriteDTO);
     }
 
     public List<CodeDTO> findCodesByUserId(Integer userId) throws IOException {
-        return codeDAO.findCodesByUserId(userId).stream().map(i -> CodeDTO
-                .builder()
+        return codeDAO.findCodesByUserId(userId).stream().map(i -> CodeDTO.builder()
                 .id(i.getId())
                 .code(getFileContent(i.getPath()))
                 .title(i.getTitle())
@@ -50,6 +49,10 @@ public class CodeService {
 
     private boolean verifyUserHasCode(Integer userId, Integer codeId) {
         return codeDAO.findCodesByUserId(userId).stream().anyMatch(i -> i.getId().equals(codeId));
+    }
+
+    private void createCodeFile(CreateCodeDTO createCodeDTO) throws IOException {
+        Files.write(Path.of(createCodeDTO.getPath()), createCodeDTO.getCode().getBytes());
     }
 
 }

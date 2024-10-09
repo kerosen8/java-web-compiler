@@ -39,8 +39,8 @@ public class LoginServlet extends HttpServlet {
                 .password(req.getParameter("password"))
                 .build();
         ValidationResult vr = loginUserValidator.validate(loginUserDTO);
-        if (vr.isValid() && userService.authentication(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
-            Optional<User> optionalUser = userService.findByEmail(loginUserDTO.getEmail());
+        if (vr.isValid() && userService.authenticate(loginUserDTO.getEmail(), loginUserDTO.getPassword())) {
+            Optional<User> optionalUser = userService.findUserByEmail(loginUserDTO.getEmail());
             SessionUserDTO user = SessionUserDTO
                     .builder()
                     .userId(optionalUser.get().getId())

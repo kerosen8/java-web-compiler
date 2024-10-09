@@ -12,9 +12,9 @@ public class JavaBeanConfigurator implements BeanConfigurator {
     private final Reflections scanner;
     private final Map<Class, Class> interfaceToImplementation;
 
-    public JavaBeanConfigurator(String packageToScan, Map<Class, Class> interfaceToImplementation) {
+    public JavaBeanConfigurator(String packageToScan) {
         this.scanner = new Reflections(packageToScan);
-        this.interfaceToImplementation = new ConcurrentHashMap<>(interfaceToImplementation);
+        this.interfaceToImplementation = new ConcurrentHashMap<>();
     }
 
     @Override

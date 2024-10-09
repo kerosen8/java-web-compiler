@@ -10,9 +10,4 @@ public class JavaConfiguration implements Configuration {
         return PropertiesUtil.getProperty("bean.packageToScan");
     }
 
-    @Override
-    public Map<Class, Class> getInterfaceToImplementations() {
-        return Map.of();
-    }
-
 }

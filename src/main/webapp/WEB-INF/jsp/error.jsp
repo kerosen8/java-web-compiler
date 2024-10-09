@@ -4,6 +4,8 @@
     <title>Error</title>
 </head>
 <body>
-    <b>${requestScope.statusCode}</b>
+    <b>${requestScope.statusCode} ERROR OCCURRED</b>
+    <br>
+    <a href="${pageContext.request.contextPath}/compiler">HOME</a>
 </body>
 </html>

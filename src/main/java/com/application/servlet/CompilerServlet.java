@@ -92,7 +92,7 @@ public class CompilerServlet extends HttpServlet {
         }
         if ("download".equals(action)) {
             resp.setContentType("application/octet-stream");
-            resp.setHeader("Content-Disposition", "attachment; filename=" + servletService.getClassName(code) + ".java");
+            resp.setHeader("Content-Disposition", "attachment; filename=" + servletService.parseClassName(code) + ".java");
             OutputStream out = resp.getOutputStream();
             out.write(code.getBytes());
             out.flush();
@@ -102,10 +102,10 @@ public class CompilerServlet extends HttpServlet {
         if ("save".equals(action)) {
             SessionUserDTO user = (SessionUserDTO) req.getSession().getAttribute("user");
             String fileName = SecurityUtil.generateFileName();
-            Files.write(Path.of("favorite/" + fileName + ".java"), code.getBytes());
             CreateCodeDTO createCodeDTO = CreateCodeDTO
                     .builder()
                     .userId(user.getUserId())
+                    .code(code)
                     .path("favorite/" + fileName + ".java")
                     .title(req.getParameter("savedCodeTitle"))
                     .build();
